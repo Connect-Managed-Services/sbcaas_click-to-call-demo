@@ -130,7 +130,7 @@ function getParameter(name, defValue = null) {
 }
 
 function initSipStack(account) {
-    phone.setServerConfig(serverAddress, sipDomain, iceServers);
+    phone.setServerConfig([serverAddress], sipDomain, iceServers);
     phone.setAccount(account.user, account.displayName, account.password);
 
     // Set phone API listeners
