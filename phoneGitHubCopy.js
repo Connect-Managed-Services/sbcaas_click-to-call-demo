@@ -226,7 +226,7 @@ function guiMakeCall(callTo, extraHeaders = []) {
     guiShowPanel('outgoing_call_panel');
     // Add X-Customer Header
     extraHeaders.push(`X-WebRTC-Customer: ${xCustomerHeader}`);
-    extraHeaders.push(`X-WebRTC-Service: ${xServiceHeader2}`);
+    extraHeaders.push(`X-WebRTC-Service: ${xServiceHeader}`);
     activeCall = phone.call(phone.AUDIO, callTo, extraHeaders);
 }
 
