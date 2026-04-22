@@ -13,7 +13,7 @@
 
 let phone = new AudioCodesUA(); // phone API
 let activeCall = null; // not null, if exists active call
-let serverAddress; //address of webrtc server
+let serverAddress = []; //address of webrtc server
 let iceServers = [];
 let sipDomain;
 let caller;
@@ -42,7 +42,7 @@ function documentIsReady() {
     }
 
     // Get server address parameter from URL
-    serverAddress = getParameter('server-address');
+    serverAddress.push(getParameter('server-address'));
     if (serverAddress === null) {
         let missedServerAddressParameter = 'Missed "server-address" parameter in URL';
         guiError(missedServerAddressParameter);
