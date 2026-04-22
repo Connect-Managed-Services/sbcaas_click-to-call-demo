@@ -42,7 +42,7 @@ function documentIsReady() {
     }
 
     // Get server address parameter from URL
-    serverAddress.push(getParameter('server-address'));
+    serverAddress = getParameter('server-address');
     if (serverAddress === null) {
         let missedServerAddressParameter = 'Missed "server-address" parameter in URL';
         guiError(missedServerAddressParameter);
