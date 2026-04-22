@@ -42,7 +42,7 @@ function documentIsReady() {
     }
 
     // Get server address parameter from URL
-    serverAddress = getParameter('server-address');
+    serverAddress = [getParameter('server-address')];
     if (serverAddress === null) {
         let missedServerAddressParameter = 'Missed "server-address" parameter in URL';
         guiError(missedServerAddressParameter);
@@ -130,7 +130,7 @@ function getParameter(name, defValue = null) {
 }
 
 function initSipStack(account) {
-    phone.setServerConfig([serverAddress], sipDomain, iceServers);
+    phone.setServerConfig(serverAddress, sipDomain, iceServers);
     phone.setAccount(account.user, account.displayName, account.password);
 
     // Set phone API listeners
