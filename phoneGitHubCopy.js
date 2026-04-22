@@ -13,7 +13,7 @@
 
 let phone = new AudioCodesUA(); // phone API
 let activeCall = null; // not null, if exists active call
-let serverAddress = []; //address of webrtc server
+let serverAddress; //address of webrtc server
 let iceServers = [];
 let sipDomain;
 let caller;
