@@ -54,7 +54,7 @@ function documentIsReady() {
     sipDomain = getParameter('sip-domain');
     if (sipDomain === null) {
         let missedSipDomainParameter = 'Missed "sip-domain" parameter in URL';
-        guiError(missedipDomainParameter);
+        guiError(missedSipDomainParameter);
         ac_log(missedSipDomainParameter);
         return;
     }
@@ -87,9 +87,18 @@ function documentIsReady() {
     }
 
     // Get service parameters from URL
+    xCustomerHeader = getParameter('xCustomerHeader');
+    if (xCustomerHeader === null) {
+        let missedXcustomerHeaderParameter = 'Missed "xCustomerHeader" parameter in URL';
+        guiError(missedXcustomerHeaderParameter);
+        ac_log(missedXcustomerHeaderParameter);
+        return;
+    }
+
+    // Get service parameters from URL
     xServiceHeader = getParameter('xserviceHeader');
     if (xServiceHeader === null) {
-        let missedXserviceHeaderParameter = 'Missed "Service" parameter in URL';
+        let missedXserviceHeaderParameter = 'Missed "xserviceHeader" parameter in URL';
         guiError(missedXserviceHeaderParameter);
         ac_log(missedXserviceHeaderParameter);
         return;
@@ -101,7 +110,7 @@ function documentIsReady() {
     // Note: the method implementation moved to phone API.
     phone.checkAvailableDevices()
         .then(() => {
-            initSipStack({ user: caller, displayName: callerDN, password: '' });
+            initSipStack({ user: caller, displayName: callerDn, password: '' });
         })
         .catch((e) => {
             ac_log('error', e);
@@ -121,7 +130,7 @@ function getParameter(name, defValue = null) {
 }
 
 function initSipStack(account) {
-    phone.setServerConfig(serverAddress, sipDomain, serverConfig.iceServers);
+    phone.setServerConfig(serverAddress, sipDomain, iceServers);
     phone.setAccount(account.user, account.displayName, account.password);
 
     // Set phone API listeners
@@ -207,17 +216,6 @@ function guiInit() {
     document.getElementById('mute_audio_btn').onclick = guiMuteAudio;
 }
 
-// function guiMakeCall(callTo) {
-//     if (activeCall !== null)
-//         throw 'Already exists active call';
-//     document.getElementById('outgoing_call_user').innerText = callTo;
-//     document.getElementById('outgoing_call_progress').innerText = '';
-//     document.getElementById('call_established_user').innerText = callTo;
-//     guiInfo('');
-//     guiShowPanel('outgoing_call_panel');
-//     activeCall = phone.call(phone.AUDIO, callTo);
-// }
-
 function guiMakeCall(callTo, extraHeaders = []) {
     if (activeCall !== null)
         throw 'Already exists active call';
@@ -227,8 +225,7 @@ function guiMakeCall(callTo, extraHeaders = []) {
     guiInfo('');
     guiShowPanel('outgoing_call_panel');
     // Add X-Customer Header
-    extraHeaders.push(`X-WebRTC-Customer: ${serverConfig.xWebRtcCustHeader}`);
-    // extraHeaders.push(`X-WebRTC-Service: ${serverConfig.xWebRtcServiceHeader}`);
+    extraHeaders.push(`X-WebRTC-Customer: ${xWebRtcCustHeader}`);
     extraHeaders.push(`X-WebRTC-Service: ${xserviceHeader}`);
     activeCall = phone.call(phone.AUDIO, callTo, extraHeaders);
 }
