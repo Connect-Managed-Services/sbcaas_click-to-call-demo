@@ -86,7 +86,7 @@ function documentIsReady() {
         return;
     }
 
-    // Get service parameters from URL
+    // Get xCustomerHeader parameters from URL
     xCustomerHeader = getParameter('xCustomerHeader');
     if (xCustomerHeader === null) {
         let missedXcustomerHeaderParameter = 'Missed "xCustomerHeader" parameter in URL';
@@ -95,7 +95,7 @@ function documentIsReady() {
         return;
     }
 
-    // Get service parameters from URL
+    // Get xserviceHeader parameters from URL
     xServiceHeader = getParameter('xserviceHeader');
     if (xServiceHeader === null) {
         let missedXserviceHeaderParameter = 'Missed "xserviceHeader" parameter in URL';
