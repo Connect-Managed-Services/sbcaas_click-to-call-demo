@@ -89,18 +89,18 @@ function documentIsReady() {
     // Get xCustomerHeader parameters from URL
     xCustomerHeader = getParameter('xCustomerHeader');
     if (xCustomerHeader === null) {
-        let missedXcustomerHeaderParameter = 'Missed "xCustomerHeader" parameter in URL';
-        guiError(missedXcustomerHeaderParameter);
-        ac_log(missedXcustomerHeaderParameter);
+        let missedxCustomerHeaderParameter = 'Missed "xCustomerHeader" parameter in URL';
+        guiError(missedxCustomerHeaderParameter);
+        ac_log(missedxCustomerHeaderParameter);
         return;
     }
 
     // Get xserviceHeader parameters from URL
-    xServiceHeader = getParameter('xserviceHeader');
+    xServiceHeader = getParameter('xServiceHeader');
     if (xServiceHeader === null) {
-        let missedXserviceHeaderParameter = 'Missed "xserviceHeader" parameter in URL';
-        guiError(missedXserviceHeaderParameter);
-        ac_log(missedXserviceHeaderParameter);
+        let missedxServiceHeaderParameter = 'Missed "xServiceHeader" parameter in URL';
+        guiError(missedxServiceHeaderParameter);
+        ac_log(missedxServiceHeaderParameter);
         return;
     }
 
