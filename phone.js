@@ -87,18 +87,18 @@ function documentIsReady() {
     }
 
     // Get xCustomerHeader parameters from URL
-    xCustomerHeader = getParameter('xCustomerHeader');
+    xCustomerHeader = getParameter('x-customer-header');
     if (xCustomerHeader === null) {
-        let missedxCustomerHeaderParameter = 'Missed "xCustomerHeader" parameter in URL';
+        let missedxCustomerHeaderParameter = 'Missed "x-customer-header" parameter in URL';
         guiError(missedxCustomerHeaderParameter);
         ac_log(missedxCustomerHeaderParameter);
         return;
     }
 
     // Get xserviceHeader parameters from URL
-    xServiceHeader = getParameter('xServiceHeader');
+    xServiceHeader = getParameter('x-service-header');
     if (xServiceHeader === null) {
-        let missedxServiceHeaderParameter = 'Missed "xServiceHeader" parameter in URL';
+        let missedxServiceHeaderParameter = 'Missed "x-service-header" parameter in URL';
         guiError(missedxServiceHeaderParameter);
         ac_log(missedxServiceHeaderParameter);
         return;
