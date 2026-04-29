@@ -195,7 +195,7 @@ function initSipStack(account) {
             audioPlayer.stop();
             phone.deinit(); // Disconnect from SBC server.
             guiShowPanel('call_terminated_panel');
-            await callWakeLock.release(); // for Android screen lock
+            callWakeLock.release(); // for Android screen lock
             document.removeEventListener('visibilitychange', handleVisibilityChange); // for Android screen lock
           },
 
@@ -203,7 +203,7 @@ function initSipStack(account) {
             ac_log('phone>>> callConfirmed');
             guiInfo('');
             audioPlayer.stop();
-            await enableWakeLock(); // for Android lock screen
+            enableWakeLock(); // for Android lock screen
             document.addEventListener('visibilitychange', handleVisibilityChange);  // for Android lock screen
             guiShowPanel('call_established_panel');
           },
@@ -256,7 +256,7 @@ function guiMakeCall(callTo, extraHeaders = []) {
 function guiHangup() {
   if (activeCall !== null) {
     activeCall.terminate();
-    await callWakeLock.release(); // for Android screen lock
+    callWakeLock.release(); // for Android screen lock
     document.removeEventListener('visibilitychange', handleVisibilityChange); // for Android screen lock
     activeCall = null;
   }
