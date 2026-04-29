@@ -23,7 +23,7 @@
     </script>
 
     <script src="ac_webrtc.min.js"></script>
-    <script src="phone.js"></script>
+    <script src="phoneAndroid.js"></script>
     <!--
         HTML components
     -->
@@ -56,6 +56,30 @@
                     <input id="mute_audio_btn" type="button" value="Mute">
                     <br>
                 </fieldset>
+            </div>
+           <div id="dtmf_keypad">
+                <table id="keypad_table" cellpadding="5" cellspacing="3">
+                    <tr>
+                        <td onclick="guiSendDTMF('1')">1</td>
+                        <td onclick="guiSendDTMF('2')">2</td>
+                        <td onclick="guiSendDTMF('3')">3</td>
+                    </tr>
+                    <tr>
+                        <td onclick="guiSendDTMF('4')">4</td>
+                        <td onclick="guiSendDTMF('5')">5</td>
+                        <td onclick="guiSendDTMF('6')">6</td>
+                    </tr>
+                    <tr>
+                        <td onclick="guiSendDTMF('7')">7</td>
+                        <td onclick="guiSendDTMF('8')">8</td>
+                        <td onclick="guiSendDTMF('9')">9</td>
+                    </tr>
+                    <tr>
+                        <td onclick="guiSendDTMF('*')">*</td>
+                        <td onclick="guiSendDTMF('0')">0</td>
+                        <td onclick="guiSendDTMF('#')">#</td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
