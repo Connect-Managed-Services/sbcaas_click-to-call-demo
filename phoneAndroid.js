@@ -110,16 +110,27 @@ function documentIsReady() {
 
     guiInit();
 
+    // Prepare audio data
+  audioPlayer.downloadSounds('sounds/', SoundConfig.downloadSounds)
+    .then(() => {
+        let tones = Object.assign({}, SoundConfig.generateTones, audioPlayer.dtmfTones);
+        return audioPlayer.generateTonesSuite(tones);
+    })
+    .then(() => {
+        ac_log('audioPlayer: sounds are ready:', audioPlayer.sounds);
+    });
+   
     // Check devices: microphone must exist
     // Note: the method implementation moved to phone API.
-    phone.checkAvailableDevices()
-        .then(() => {
-            initSipStack({ user: caller, displayName: callerDn, password: '' });
-        })
-        .catch((e) => {
-            ac_log('error', e);
-            guiError(e);
-        })
+    phone
+      .checkAvailableDevices()
+      .then(() => {
+         initSipStack({ user: caller, displayName: callerDn, password: '' });
+      })
+      .catch((e) => {
+         ac_log('error', e);
+         guiError(e);
+      })
 }
 
 function ac_log() {
@@ -163,31 +174,39 @@ function initSipStack(account) {
         },
 
         outgoingCallProgress: function (call, response) {
-            ac_log('phone>>> outgoing call progress');
-            document.getElementById('outgoing_call_progress').innerText = 'ring ring';
-        },
+         ac_log('phone>>> outgoing call progress');
+         document.getElementById('outgoing_call_progress').innerText = 'ring ring';
+         if (response.body) {
+             call.data['outgoingCallProgress_played'] = true; // If the 18x respone includes SDP, the server plays sound
+         } else if (!call.data['outgoingCallProgress_played']) {
+             call.data['outgoingCallProgress_played'] = true; // To prevent duplicate playing.
+             audioPlayer.play(SoundConfig.play.outgoingCallProgress);
+         }
+       },
 
         callTerminated: function (call, message, cause, redirectTo) {
             ac_log(`phone>>> call terminated callback, cause=${cause}`);
             if (call !== activeCall) {
-                ac_log('terminated no active call');
-                return;
+              ac_log('terminated no active call');
+              return;
             }
             activeCall = null;
             guiWarning('Call terminated: ' + cause);
+            audioPlayer.stop();
             phone.deinit(); // Disconnect from SBC server.
             guiShowPanel('call_terminated_panel');
-        },
+            await callWakeLock.release(); // for Android screen lock
+            document.removeEventListener('visibilitychange', handleVisibilityChange); // for Android screen lock
+          },
 
         callConfirmed: function (call, message, cause) {
             ac_log('phone>>> callConfirmed');
             guiInfo('');
-            // let remoteVideo = document.getElementById('remote_video');
-            // let vs = remoteVideo.style;
-            // vs.display = 'block';
-            // vs.width = vs.height = call.hasReceiveVideo() ? 'auto' : 0;
+            audioPlayer.stop();
+            await enableWakeLock(); // for Android lock screen
+            document.addEventListener('visibilitychange', handleVisibilityChange);  // for Android lock screen
             guiShowPanel('call_established_panel');
-        },
+          },
 
         callShowStreams: function (call, localStream, remoteStream) {
             ac_log('phone>>> callShowStreams');
@@ -214,30 +233,51 @@ function onBeforeUnload() {
 }
 
 function guiInit() {
-    window.addEventListener('beforeunload', onBeforeUnload);
-    document.getElementById('cancel_outgoing_call_btn').onclick = guiHangup;
-    document.getElementById('hangup_btn').onclick = guiHangup;
-    document.getElementById('mute_audio_btn').onclick = guiMuteAudio;
+  window.addEventListener('beforeunload', onBeforeUnload);
+  document.getElementById('cancel_outgoing_call_btn').onclick = guiHangup;
+  document.getElementById('hangup_btn').onclick = guiHangup;
+  document.getElementById('mute_audio_btn').onclick = guiMuteAudio;
+  document.getElementById('keypad_btn').onclick = guiToggleDTMFKeyPad;
 }
 
 function guiMakeCall(callTo, extraHeaders = []) {
-    if (activeCall !== null)
-        throw 'Already exists active call';
-    document.getElementById('outgoing_call_user').innerText = callTo;
-    document.getElementById('outgoing_call_progress').innerText = '';
-    document.getElementById('call_established_user').innerText = callTo;
-    guiInfo('');
-    guiShowPanel('outgoing_call_panel');
-    // Add X-Customer Header
-    extraHeaders.push(`X-WebRTC-Customer: ${xCustomerHeader}`);
-    extraHeaders.push(`X-WebRTC-Service: ${xServiceHeader}`);
-    activeCall = phone.call(phone.AUDIO, callTo, extraHeaders);
+  if (activeCall !== null) throw 'Already exists active call';
+  document.getElementById('outgoing_call_user').innerText = callTo;
+  document.getElementById('outgoing_call_progress').innerText = '';
+  document.getElementById('call_established_user').innerText = callTo;
+  guiInfo('');
+  guiShowPanel('outgoing_call_panel');
+  // Add X-Customer Header
+  extraHeaders.push(`X-WebRTC-Customer: ${xCustomerHeader}`);
+  extraHeaders.push(`X-WebRTC-Service: ${xServiceHeader}`);
+  activeCall = phone.call(phone.AUDIO, callTo, extraHeaders);
 }
 
 function guiHangup() {
-    if (activeCall !== null) {
-        activeCall.terminate();
-        activeCall = null;
+  if (activeCall !== null) {
+    activeCall.terminate();
+    await callWakeLock.release(); // for Android screen lock
+    document.removeEventListener('visibilitychange', handleVisibilityChange); // for Android screen lock
+    activeCall = null;
+  }
+}
+
+function guiSendDTMF(key) {
+    if (activeCall != null) {
+        audioPlayer.play(Object.assign({ 'name': key }, SoundConfig.play.dtmf));
+        activeCall.sendDTMF(key);
+    }
+}
+
+function guiToggleDTMFKeyPad() {
+    if (guiIsHidden('dtmf_keypad')) {
+        ac_log('show DTMF keypad');
+        document.getElementById('keypad_btn').value = 'Close keypad';
+        guiShow('dtmf_keypad');
+    } else {
+        ac_log('hide DTMF keypad');
+        document.getElementById('keypad_btn').value = 'Keypad';
+        guiHide('dtmf_keypad');
     }
 }
 
@@ -248,17 +288,24 @@ function guiMuteAudio() {
 }
 
 //--------------- Status line -------
-function guiError(text) { guiStatus(text, 'Pink'); }
+function guiError(text) {
+   guiStatus(text, 'Pink');
+}
 
-function guiWarning(text) { guiStatus(text, 'Gold'); }
+function guiWarning(text) {
+   guiStatus(text, 'Gold');
+}
 
-function guiInfo(text) { guiStatus(text, 'Aquamarine'); }
+function guiInfo(text) {
+   guiStatus(text, 'Aquamarine');
+}
 
 function guiStatus(text, color) {
     let line = document.getElementById('status_line');
     line.setAttribute('style', `background-color: ${color}`);
     line.innerHTML = text;
 }
+
 //--------------- Show or hide element -------
 function guiShow(id) {
     document.getElementById(id).style.display = 'block';
