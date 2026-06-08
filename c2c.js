@@ -10,6 +10,8 @@ let c2c_audioPlayer = new AudioPlayer2();
 let c2c_activeCall = null; // tracks call state
 let c2c_sbcDisconnectCounter = 0;
 let c2c_sbcDisconnectTimer = null;
+let c2c_devices = null; // select devices feature, not for all OS/browsers.
+let c2c_hasAudio = false;
 
 // requried URL Params to make call
 let callTo;
@@ -27,6 +29,8 @@ let c2c_callButtonText = document.getElementById('c2c_callButtonText');
 let c2c_muteButton = document.getElementById('c2c_muteButton');
 let c2c_dtmfKeypad = document.getElementById('c2c_dtmfKeypad');
 let c2c_remoteAudio = document.getElementById('c2c_remote_audio');
+let c2c_devicesDialog = document.getElementById("c2c_select_devices_dialog");
+
 
 // ----------- Functions ----------
 // set console timestamp format
@@ -69,10 +73,36 @@ async function c2c_init() {
     // set SIP user-agent header
     c2c_phone.setUserAgent(`${userAgent}, ${c2c_phone.getBrowserName()}`);
 
+	// set devices
+	c2c_devices = new SelectDevices();
+
+	c2c_devices.setDevices(true,
+		[{ name: 'microphone', kind: 'audioinput' },
+		{ name: 'speaker', kind: 'audiooutput' }]);
+
+	// click-to-call does not use local storage, but uses session storage
+	// to restore selected devices after page reload.
+	let selectedDevices = sessionStorage.getItem('c2c_selectedDevices');
+	if (selectedDevices !== null) {
+		c2c_devices.load(JSON.parse(selectedDevices));
+	}
+
+	await c2c_devices.enumerate(false);
+
     // Check WebRTC support. If loaded from unsecure context (HTTP site) the WebRTC API is hidden. 
 	if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
 		c2c_gui_phoneDisabled('WebRTC API is not supported in this browser !');
 		return;
+	}
+
+	// Check presence of microphone, speaker, web camera.
+	try {
+		c2c_hasAudio = await c2c_phone.checkAvailableDevices();
+		c2c_ac_log(`Audio is ${c2c_hasAudio ? 'present' : 'missing'}`);
+	} catch (e) {
+			c2c_ac_log('No microphone or speaker !'); // Please connect headset and reload page.
+			c2c_callButtonText.innerHTML = 'No Mic/Speaker';
+			return;
 	}
 
 	// Prepare audio player
@@ -86,6 +116,11 @@ async function c2c_init() {
 	await c2c_audioPlayer.generateTonesSuite(basicDtmfTones);
 
 	c2c_ac_log('audioPlayer2: sounds are ready');
+
+	if (c2c_devices) {
+		let spkrId = c2c_devices.getSelected('speaker').deviceId;
+		c2c_audioPlayer.setSpeakerId(spkrId);
+	}
 
 	// mandatory url parameters
 	callTo = c2c_getStrUrlParameter('call');
@@ -235,7 +270,9 @@ function c2c_initStack(account) {
 }
 
 async function c2c_sbc_connect_sequence() {
+	await c2c_selectDevices();
 	c2c_initStack({ user: caller, displayName: callerDn, password: '' });
+	
 }
 
 // make call
@@ -246,6 +283,8 @@ async function makeCall(callTo, extraHeaders = []) {
 		clearTimeout(c2c_sbcDisconnectTimer);
 		c2c_sbcDisconnectTimer = null;
 	}
+
+	// await c2c_selectDevices()
 
     await c2c_sbc_connect_sequence();
 
@@ -301,6 +340,97 @@ function c2c_gui_phoneBeforeCall() {
 	c2c_muteButton.innerHTML = '🔈mute';
 	c2c_muteButton.style.display = 'none';
 	c2c_dtmfKeypad.style.display = 'none';
+}
+
+// select devices
+function c2c_selectDevices() {
+	c2c_ac_log('c2c_selectDevices()');
+	showDeviceDialog();
+	document.getElementById('select_devices_done_btn').onclick = c2c_selectDevicesDone;
+	c2c_devices.enumerate(true)
+		.catch((e) => {
+			c2c_ac_log('getUserMedia() exception', e);
+		})
+		.finally(() => {
+			for (let name of c2c_devices.names) {
+				c2c_fillDeviceList(name);
+			}
+		});
+}
+
+// populate devices on webpage in select devices dialog
+function c2c_fillDeviceList(name) {
+	let device = c2c_devices.getDevice(name); // name is one of 'microphone', 'speaker', 'camera', 'ringer'
+	console.log('device: ', device)
+	let selector = document.querySelector(`#c2c_devices [name=${name}]`);
+	// Clear select push-down list
+	while (selector.firstChild) {
+		selector.removeChild(selector.firstChild);
+	}
+	if (device.incomplete) {
+		selector.disabled = true;
+		c2c_ac_log(`Warning: To device selection let enable ${name} usage`);
+	} else {
+		selector.disabled = false;
+	}
+	// Loop by device labels and add option elements.
+	for (let ix = 0; ix < device.list.length; ix++) {
+		let dev = device.list[ix]
+		let option = document.createElement("option");
+		option.text = dev.label;      // device name
+		option.value = ix.toString(); // index in device list
+		option.selected = (device.index === ix); // selected device
+		selector.add(option);
+	}
+
+	document.getElementById(`${name}_dev`).style.display = (device.list.length > 1) ? 'block' : 'none';
+}
+
+// when done is clicked on the select devices dialog on webpage
+function c2c_selectDevicesDone() {
+	for (let name of c2c_devices.names) {
+		let selectElement = document.querySelector(`#c2c_devices [name=${name}]`);
+		let index = selectElement.selectedIndex;
+		if (index !== -1) { // -1 indicates that no element is selected
+			let n = selectElement.options[index].value;
+			c2c_devices.setSelectedIndex(name, parseInt(n));
+		}
+	}
+
+	let selectedDevices = c2c_devices.store();
+
+	// To restore after page reload.
+	sessionStorage.setItem('c2c_selectedDevices', JSON.stringify(selectedDevices));
+
+	let str = 'Devices done: selected';
+	for (let name of c2c_devices.names) {
+		if (c2c_devices.getNumber(name) > 1) {
+			str += `\n${name}: "${c2c_devices.getSelected(name).label}"`;
+		}
+	}
+	c2c_ac_log(str);
+
+	let micId = c2c_devices.getSelected('microphone').deviceId;
+	c2c_phone.setConstraint('audio', 'deviceId', micId);
+
+	let spkrId = c2c_devices.getSelected('speaker').deviceId;
+	c2c_audioPlayer.setSpeakerId(spkrId);
+
+	c2c_gui_phoneBeforeCall();
+}
+
+// show select devices dialog
+function showDeviceDialog() {
+  if (!c2c_devicesDialog.open) {
+    c2c_devicesDialog.showModal();
+  }
+}
+
+// hide select devices dialog
+function hideDeviceDialog() {
+  if (c2c_devicesDialog.open) {
+    c2c_devicesDialog.close();
+  }
 }
 
 // When page loads
