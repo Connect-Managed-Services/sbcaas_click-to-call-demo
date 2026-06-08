@@ -1,12 +1,4 @@
-let c2c_serverConfig = {
-    domain: 'weconnect.tech',
-    addresses: ['wss://webrtc01-10081.euw.connect-sbcaas.com:10081'],
-}
-
 let c2c_config = {
-    xCustomerHeader: 'd2d3b244f48a0a2fc73e6ac3d520a074',
-    xServiceHeader: '7beaf5944824d4f31d042ca14160cdcd',
-
     //phone settings
     networkPriority: 'high', // RTP packet marking: undefined (don't change) or 'high' (CS7), 'medium', 'low', 'very-low'. only supported in Chrome.
     selectDevicesEnabled: true, // controls if the user can select devices
