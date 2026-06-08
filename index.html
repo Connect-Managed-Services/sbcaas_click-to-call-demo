@@ -26,7 +26,7 @@
     <script defer src="c2c.js"></script>
     <div>
         <header>
-            <h1>Jasons WebRTC SDK build v5-1 Audodial for URL or QR Code</h1>
+            <h1>Jasons WebRTC SDK build v5-1 Autodial for URL or QR Code</h1>
         </header>
 
         <main>
@@ -51,6 +51,26 @@
                         <div class="phone-controls">
                             <button class='control-btn call-btn' id="c2c_callButton" onclick="cancelClicked()"><svg class="phone-svg" viewBox="0 0 24 24"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.3 21 3 13.7 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.24 1.01l-2.21 2.2z"/></svg><span id="c2c_callButtonText"></span></button>
                         </div>
+
+                        <dialog id="c2c_select_devices_dialog">
+                            <form id="c2c_devices" method="dialog">
+                                <fieldset>
+                                    <dev id="microphone_dev">
+                                        Microphone<br>
+                                        <select name="microphone" style="max-width: 30rem"></select>
+                                        <br>
+                                    </dev>
+
+                                    <dev id="speaker_dev">
+                                        Speaker<br>
+                                        <select name="speaker" style="max-width: 30rem"></select>
+                                        <br>
+                                    </dev>
+                                </fieldset>
+
+                                <input class='control-btn selectDevices-btn' id="select_devices_done_btn" type="submit" value="Done">
+                            </form>
+                        </dialog>
 
                         <div class="phone-controls">
                             <button class='control-btn mute-btn' id="c2c_muteButton" onclick="toggleMute()">🔈 Mute</button>
