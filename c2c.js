@@ -284,8 +284,8 @@ async function c2c_sbc_connect_sequence() {
 // make call
 async function makeCall(callTo, extraHeaders = []) {
     
-    extraHeaders.push(`X-WebRTC-Customer: ${c2c_config.xCustomerHeader}`);
-    extraHeaders.push(`X-WebRTC-Service: ${c2c_config.xServiceHeader}`);
+    extraHeaders.push(`X-WebRTC-Customer: ${xCustomerHeader}`);
+    extraHeaders.push(`X-WebRTC-Service: ${xServiceHeader}`);
     c2c_activeCall = c2c_phone.call(c2c_phone.AUDIO, callTo, extraHeaders);
     c2c_callButtonText.innerHTML = 'Trying/Hangup'
 
