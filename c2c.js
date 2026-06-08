@@ -165,8 +165,14 @@ async function c2c_init() {
 		c2c_ac_log(`Extra Headers to add: ${xExtraHeaders}}.`);
 	}
 
-	//make call
-	makeCall(callTo);
+	// check if disconnct timer is not null, if not then cancel it to prevent 'c2c_phone.deinit();'
+    if (c2c_sbcDisconnectTimer !== null) {
+		clearTimeout(c2c_sbcDisconnectTimer);
+		c2c_sbcDisconnectTimer = null;
+	}
+
+    await c2c_sbc_connect_sequence();
+
 }
 
 // Get URL parameters
@@ -278,16 +284,6 @@ async function c2c_sbc_connect_sequence() {
 // make call
 async function makeCall(callTo, extraHeaders = []) {
     
-    // check if disconnct timer is not null, if not then cancel it to prevent 'c2c_phone.deinit();'
-    if (c2c_sbcDisconnectTimer !== null) {
-		clearTimeout(c2c_sbcDisconnectTimer);
-		c2c_sbcDisconnectTimer = null;
-	}
-
-	// await c2c_selectDevices()
-
-    await c2c_sbc_connect_sequence();
-
     extraHeaders.push(`X-WebRTC-Customer: ${c2c_config.xCustomerHeader}`);
     extraHeaders.push(`X-WebRTC-Service: ${c2c_config.xServiceHeader}`);
     c2c_activeCall = c2c_phone.call(c2c_phone.AUDIO, callTo, extraHeaders);
@@ -340,6 +336,7 @@ function c2c_gui_phoneBeforeCall() {
 	c2c_muteButton.innerHTML = '🔈mute';
 	c2c_muteButton.style.display = 'none';
 	c2c_dtmfKeypad.style.display = 'none';
+	makeCall();
 }
 
 // select devices
@@ -417,6 +414,9 @@ function c2c_selectDevicesDone() {
 	c2c_audioPlayer.setSpeakerId(spkrId);
 
 	c2c_gui_phoneBeforeCall();
+
+	//make call
+	makeCall(callTo);
 }
 
 // show select devices dialog
