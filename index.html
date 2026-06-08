@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Jasons SDK build v5</title>
+  <meta name="description" content="Brief description of the page">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <link rel="icon" type="image/png" href="https://www.weconnect.tech/wp-content/themes/connect-site/assets/dist/img/favicon.png" sizes="32x32">
+</head>
+
+<body>
+    <!-- Check that browser is not IE -->
+    <script>
+        var ua = window.navigator.userAgent;
+        if (ua.indexOf('MSIE ') > 0 || ua.indexOf('Trident/') > 0) {
+            alert("Internet Explorer is not supported. Please use Chrome or Firefox");
+        }
+    </script>
+    <script defer src="config.js"></script>
+    <script defer src="ac_webrtc.min.js"></script>
+    <script defer src="utils.js"></script>
+    <script defer src="c2c.js"></script>
+    <div>
+        <header>
+            <h1>Jasons WebRTC SDK build v5-1 Audodial for URL or QR Code</h1>
+        </header>
+
+        <main>
+            <div class="content-wrapper">
+                <div id="notesDiv">
+                    <section>
+                        <h2>Overview</h2>
+                        <p class="dash-item">- Page auto calls on load and uses URL Params for config</p>
+                        <p class="dash-item">- Button updates with status of call and also acts as a hangup button</p>
+                    </section>
+                    <section>
+                        <h2>Features</h2>
+                        <p class="dash-item">- Plays ringback based on presence of progress SDP</p>
+                        <p class="dash-item">- Supports per country tones</p>
+                        <p class="dash-item">- DTMF using RFC2833</p>
+                        <p class="dash-item">- Packet Marking (CS7)</p>
+                    </section>
+                </div>
+                <div class="phone-ui">
+                    <div class="phone-button-column">
+                        
+                        <div class="phone-controls">
+                            <button class='control-btn call-btn' id="c2c_callButton" onclick="cancelClicked()"><svg class="phone-svg" viewBox="0 0 24 24"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.3 21 3 13.7 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.24 1.01l-2.21 2.2z"/></svg><span id="c2c_callButtonText"></span></button>
+                        </div>
+
+                        <div class="phone-controls">
+                            <button class='control-btn mute-btn' id="c2c_muteButton" onclick="toggleMute()">🔈 Mute</button>
+                        </div>
+                    
+                    </div>
+
+                    <div class="dtmf-keypad" id="c2c_dtmfKeypad">
+                        <button id="dtmf-1" class="dtmf-btn" onclick="c2c_sendDtmf('1')">1</button>
+                        <button id="dtmf-2" class="dtmf-btn" onclick="c2c_sendDtmf('2')">2</button>
+                        <button id="dtmf-3" class="dtmf-btn" onclick="c2c_sendDtmf('3')">3</button>
+
+                        <button id="dtmf-4" class="dtmf-btn" onclick="c2c_sendDtmf('4')">4</button>
+                        <button id="dtmf-5" class="dtmf-btn" onclick="c2c_sendDtmf('5')">5</button>
+                        <button id="dtmf-6" class="dtmf-btn" onclick="c2c_sendDtmf('6')">6</button>
+
+                        <button id="dtmf-7" class="dtmf-btn" onclick="c2c_sendDtmf('7')">7</button>
+                        <button id="dtmf-8" class="dtmf-btn" onclick="c2c_sendDtmf('8')">8</button>
+                        <button id="dtmf-9" class="dtmf-btn" onclick="c2c_sendDtmf('9')">9</button>
+
+                        <button id="dtmf-*" class="dtmf-btn" onclick="c2c_sendDtmf('*')">*</button>
+                        <button id="dtmf-0" class="dtmf-btn" onclick="c2c_sendDtmf('0')">0</button>
+                        <button id="dtmf-#" class="dtmf-btn" onclick="c2c_sendDtmf('#')">#</button>
+                    </div>
+                    
+                </div>
+            </div>
+        </main>
+        <!-- audio element to play remote audio -->
+        <audio id="c2c_remote_audio" style="display: none;" autoplay playsinline></audio>
+    </div>
+</body>
+</html>

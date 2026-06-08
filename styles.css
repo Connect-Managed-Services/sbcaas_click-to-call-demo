@@ -1,0 +1,166 @@
+h1 {
+    font-family: "Montserrat", "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-weight: 800;
+    font-size: 2.25rem;
+    margin-top: 0;
+    margin-bottom: 30px;
+    line-height: 1.2;
+    padding: 0.8em 0 0.1em 0;
+}
+
+h2 {
+    font-family: "Montserrat", "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-weight: 600;
+    padding: 0.8em 0 0.1em 0;
+}
+
+h3 {
+    font-family:Montserrat, "Roboto",-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"!important; 
+	font-weight: 500 !important;
+    color: #111111 !important;
+}
+
+p {
+   font-family: "Roboto",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+   font-weight: 300;
+   line-height: 1;
+   margin-bottom: 10px;
+}
+
+select {
+  border-radius: 2rem;
+}
+
+.content-wrapper {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.dash-item {
+    margin: 2px;
+    margin-left: 30px;
+}
+
+.phone-ui {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    width: fit-content;
+    margin-top: 2rem;
+  }
+
+  .phone-button-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.dtmf-keypad {
+  display: none;
+  grid-template-columns: repeat(3, 2.5rem);
+  gap: 0.7rem;
+  justify-content: center;
+}
+
+.dtmf-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: none;
+    border-radius: 50%;
+    background: #f2f2f2;
+    color: #222;
+    font-size: 1.3rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.15);
+    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  }
+
+ .dtmf-btn:hover {
+    background: #e2e2e2;
+  }
+
+.dtmf-btn:active {
+    transform: scale(0.94);
+    box-shadow: 0 0.1rem 0.3rem rgba(0, 0, 0, 0.2);
+  }
+
+.phone-controls {
+  display: flex;
+}
+
+.control-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+
+  height: 2.5rem;
+  padding: 0 0.75rem;
+
+  border: none;
+  border-radius: 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: white;
+  transition: all 0.15s ease;
+  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.15);
+}
+
+.control-btn:active {
+  transform: scale(0.96);
+}
+
+.call-btn {
+  background: #99e0a0;
+  width: 10rem;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.call-btn:hover {
+  background: #43bf4f;
+}
+
+.call-btn.active-call {
+  background: #be5050;
+}
+
+.active-call:hover {
+  background: #b20707;
+}
+.phone-svg {
+  width: 1.3rem;
+  height: 1.3rem;
+  fill: white;
+}
+
+.mute-btn {
+  display: none;
+  background: #f2f2f2;
+  color: #222;
+  width: 10rem;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.selectBox {
+  background: #f2f2f2;
+  color: #222;
+  width: 10rem;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.selectDevices-btn {
+  background: #f2f2f2;
+  color: #222;
+  width: 10rem;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.mute-btn:hover, .selectDevices-btn:hover {
+  background: #e2e2e2;
+}
