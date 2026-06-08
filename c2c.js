@@ -276,9 +276,10 @@ function c2c_initStack(account) {
 }
 
 async function c2c_sbc_connect_sequence() {
-	if(c2c_phone.getOS() === 'windows'){
-		await c2c_selectDevices();
-	}
+	// if(c2c_phone.getOS() === 'windows'){
+	// 	await c2c_selectDevices();
+	// }
+	await c2c_selectDevices();
 	c2c_initStack({ user: caller, displayName: callerDn, password: '' });
 	
 }
