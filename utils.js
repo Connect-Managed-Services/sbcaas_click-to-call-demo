@@ -683,3 +683,203 @@ class AudioPlayer2 {
         }
     }
 }
+
+/**
+ * Enumerate available devices: microphones, cameras, speakers (only Chrome provides speakers).
+ * Allow select devices, save the selection to local storage.
+ * Restore the device selection in the next sessions.
+ *
+ * Selected microphone and camera used in getUserMedia method as deviceId constraint.
+ * Selected speaker and ringer associated with HTMLAudioElement by setSinkId method (only in Chrome).
+ */
+class SelectDevices {
+    // Parameters can be modified before enumerate() method.
+    constructor() {
+        this.defaultPseudoDevice = true;
+        this.names = [];
+        this.enumerateDevices = AudioCodesUA.instance.getWR().mediaDevices.enumerateDevices;     // enumerate devices function.
+        this.browserDefaultLabel = '-- browser default--'; // default pseudo device - means do not use deviceId and sinkId
+        this.emptyLabel = '-- no label --';                 // for label = '' in incomplete device list
+        this.previousSelection = null;                // device selection from local storage
+    }
+
+    setDevices(defaultPseudoDevice, devices) {
+        this.defaultPseudoDevice = defaultPseudoDevice;
+        this.names = [];
+        for (let device of devices) {
+            if (!['audioinput', 'audiooutput', 'videoinput'].includes(device.kind))
+                throw new TypeException(`Illegal kind: ${device.kind}`)
+            this.names.push(device.name);
+            this[device.name] = { kind: device.kind };
+        }
+    }
+
+    setEnumerateDevices(method) {
+        this.enumerateDevices = method;
+    }
+
+    enumerate(useGetUserMediaIfNeed) {
+        let stream = null;
+        let incomplete = false;
+        return Promise.resolve()
+            .then(() =>
+                this.doEnumerate())
+            .then((inc) => {
+                incomplete = inc;
+                if (incomplete && useGetUserMediaIfNeed) {
+                    return AudioCodesUA.instance.getWR().getUserMedia({ audio: true, video: true });
+                } else {
+                    return Promise.resolve(null);
+                }
+            })
+            .then((s) => {
+                stream = s;
+                if (stream) {
+                    // For incomplete device list repeat with open stream.
+                    return this.doEnumerate();
+                }
+            })
+            .then(() => {
+                if (stream) {
+                    incomplete = false;
+                    stream.getTracks().forEach(track => track.stop());
+                }
+            })
+            .then(() => {
+                // Restore previous selection.
+                if (this.previousSelection) {
+                    for (let name of this.names) {
+                        if (!this.findPreviousSelection(name)) {
+                            if (incomplete)
+                                this.addPreviousSelection(name);
+                        }
+                    }
+                }
+            });
+    }
+
+    // Without open stream by getUserMedia (or without permission to use microphone/camera)
+    // device list will be incomplete:
+    // some devices will be with empty string label, some devices can be missed.
+    doEnumerate() {
+        let incomplete = false; // exists incomplete device lists
+        let emptyLabel = this.emptyLabel;
+
+        function setLabel(device, str) {
+            if (str)
+                return str;
+            incomplete = device.incomplete = true;
+            return emptyLabel;
+        }
+
+        // reset device list and selection index.
+        for (let name of this.names) {
+            let device = this.getDevice(name);
+            device.incomplete = false;
+            if (this.defaultPseudoDevice) {
+                device.index = 0; // selected browser default pseudo-device.
+                device.list = [{ deviceId: null, label: this.browserDefaultLabel }];
+            } else {
+                device.index = -1; // device is not selected.
+                device.list = [];
+            }
+        }
+
+        return this.enumerateDevices()
+            .then((infos) => {
+                for (let info of infos) {
+                    for (let name of this.names) {
+                        let device = this.getDevice(name);
+                        if (info.kind === device.kind) {
+                            device.list.push({ deviceId: info.deviceId, label: setLabel(device, info.label) })
+                        }
+                    }
+                }
+            })
+            .then(() => {
+                return incomplete;
+            });
+    }
+
+    // Select device using previously saved device label
+    findPreviousSelection(name) {
+        let device = this.getDevice(name);
+        let sel = this.previousSelection && this.previousSelection[name];
+        if (!sel || sel.label === this.emptyLabel)
+            return false;
+        for (let ix = 0; ix < device.list.length; ix++) {
+            if (device.list[ix].label === sel.label) {
+                device.index = ix;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Without open stream by getUserMedia enumerate devices provides incomplete device list.
+    // In the case we add previously selected device to the incomplete list.
+    // Problem: previously used USB or bluetooth headset/camera could be disconnected.
+    addPreviousSelection(name) {
+        let device = this.getDevice(name);
+        let sel = this.previousSelection && this.previousSelection[name];
+        if (sel && sel.label !== this.browserDefaultLabel && sel.label !== this.emptyLabel) {
+            AudioCodesUA.ac_log(`devices: added previously selected ${name} "${sel.label}"`);
+            device.list.push(sel);
+            device.index = device.list.length - 1;
+        }
+    }
+
+    // Returns selected device object { deviceId: '', label: ''}
+    getDevice(name) {
+        if (!this[name])
+            throw new TypeError(`wrong device name: ${name}`);
+        return this[name];
+    }
+
+    getSelected(name) {
+        let device = this.getDevice(name);
+        if (device.list.length === 0 || device.index === -1) // device list is empty or device is not selected 
+            return { deviceId: null, label: this.emptyLabel };
+        return device.list[device.index];
+    }
+
+    getNumber(name) {
+        return this.getDevice(name).list.length;
+    }
+
+    // Set selected by GUI device
+    setSelectedIndex(name, index) {
+        let device = this.getDevice(name);
+        if (index < 0 || index >= device.list.length)
+            throw new RangeError(`setSelectedIndex ${name} index=${index}`);
+        device.index = index;
+    }
+
+    // Store selected devices. Supposed local storage usage.
+    store() {
+        this.previousSelection = null;
+        for (let name of this.names) {
+            let device = this.getDevice(name);
+            if (device.list.length === 0 || device.index === -1)
+                continue;
+            if (!this.previousSelection)
+                this.previousSelection = {};
+            this.previousSelection[name] = this.getSelected(name);
+        }
+        return this.previousSelection;
+    }
+
+    // Load previously stored selected devices. Can be null if no stored devices.
+    load(obj) {
+        this.previousSelection = obj;
+    }
+
+    // Device connected/removed event
+    addDeviceChangeListener(listener) {
+        AudioCodesUA.instance.getWR().mediaDevices.addDeviceChangeListener(listener);
+    }
+
+    removeDeviceChangeListener(listener) {
+        AudioCodesUA.instance.getWR().mediaDevices.removeDeviceChangeListener(listener);
+    }
+}
