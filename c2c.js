@@ -1,4 +1,4 @@
-F'use strict';
+'use strict';
 
 const userAgent = 'JasonWebSdk v5.2'
 const c2c_sbcDisconnectCounterMax = 5;
