@@ -1,4 +1,4 @@
-'use strict';
+F'use strict';
 
 const userAgent = 'JasonWebSdk v5.2'
 const c2c_sbcDisconnectCounterMax = 5;
@@ -299,11 +299,11 @@ async function c2c_sbc_connect_sequence() {
 }
 
 // make call
-async function makeCall(callTo, extraHeaders = []) {
+async function makeCall(callTo) {
     
-    extraHeaders.push(`X-WebRTC-Customer: ${xCustomerHeader}`);
-    extraHeaders.push(`X-WebRTC-Service: ${xServiceHeader}`);
-    c2c_activeCall = c2c_phone.call(c2c_phone.AUDIO, callTo, extraHeaders);
+    xExtraHeaders.push(`X-WebRTC-Customer: ${xCustomerHeader}`);
+    xExtraHeaders.push(`X-WebRTC-Service: ${xServiceHeader}`);
+    c2c_activeCall = c2c_phone.call(c2c_phone.AUDIO, callTo, xExtraHeaders);
     c2c_callButtonText.innerHTML = 'Trying/Hangup'
 
 }
