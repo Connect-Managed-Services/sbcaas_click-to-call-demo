@@ -161,8 +161,9 @@ async function c2c_init() {
 	// optional read extra headers from array in URL params
 	xExtraHeaders = c2c_getStrUrlParameter('x-headers');
 	if (xExtraHeaders) {
-		xExtraHeaders = JSON.parse(xExtraHeaders)
-		c2c_ac_log(`Extra Headers to add: ${xExtraHeaders}}.`);
+		c2c_ac_log(`Extra Headers to add (raw): ${xExtraHeaders}`);
+        xExtraHeaders = c2c_parseExtraHeaders(xExtraHeaders);
+        c2c_ac_log(`Extra Headers to add: ${JSON.stringify(xExtraHeaders)}`);
 	}
 
 	// check if disconnct timer is not null, if not then cancel it to prevent 'c2c_phone.deinit();'
@@ -180,6 +181,19 @@ function c2c_getStrUrlParameter(name, defValue = null) {
 	let s = window.location.search.split('&' + name + '=')[1];
 	if (!s) s = window.location.search.split('?' + name + '=')[1];
 	return s !== undefined ? decodeURIComponent(s.split('&')[0]) : defValue;
+}
+
+function c2c_parseExtraHeaders(str) {
+	const result = {};
+	if (!str) return result;
+	str.split(',').forEach(pair => {
+		const idx = pair.indexOf(':');
+		if (idx === -1) return; // skip malformed entries
+		const key = pair.slice(0, idx).trim();
+		const value = pair.slice(idx + 1).trim();
+		if (key) result[key] = value;
+	});
+	return result;
 }
 
 // Connect to SBC server, don't send REGISTER (init(false))
